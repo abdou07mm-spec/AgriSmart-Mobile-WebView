@@ -1,611 +1,743 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>AgriSmart Hub v7.0 | المنصة المتكاملة لإدارة الأسمدة والري</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #2d6a4f; --dark: #1b4332; --accent: #ff9f1c;
-            --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b;
-            --blue-eco: #0077b6; --danger: #ef4444; --success: #22c55e;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgriSmart Hub</title>
+<meta name="description" content="حلّل تربتك، احسب السماد الناقص، وتحكّم في صمّام الري من هاتفك.">
+<meta name="theme-color" content="#3d2618">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: a working farm tool: calm, direct, numbers first.
+IDEA: the farmer's field notebook turned app: soil in, yield and fertilizer out, valve one tap away.
+PICTURE: welcome field plan; home yield card in earth; big valve dial on the irrigation tab.
+COLOUR and TYPE: earth #3d2618, wheat #d9b35b, water #2f8fe0, on warm sand; Noto Kufi Arabic titles, IBM Plex Sans Arabic text and figures.
+LAYOUT: app bar, one view at a time, bottom tab bar on phones, side rail from 900px.
+*/
+:root{
+  --bg:#f3eee3;--surf:#fff;--surf2:#f8f3ea;--ink:#23170e;--muted:#6f5e4c;--line:#e6dccb;
+  --earth:#3d2618;--earth2:#5b3b25;--on:#f7ecd6;--on2:#d8c3a0;
+  --wheat:#d9b35b;--water:#2f8fe0;--wink:#1b6fc0;--leaf:#4f8a35;--dry:#d9722f;--warn:#a8520b;
+  --sel:#3d2618;--onsel:#f7ecd6;--tabh:68px;--safe:env(safe-area-inset-bottom,0px);color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14100b;--surf:#1f1710;--surf2:#291e14;--ink:#f1e6d2;--muted:#b5a38c;--line:#3a2c1f;--earth:#2c1b10;--earth2:#4a3020;--wink:#6ab4f5;--leaf:#7fb35a;--dry:#f0904d;--warn:#f0a35a;--sel:#d9b35b;--onsel:#2a1a10;color-scheme:dark}}
+:root[data-theme=dark]{--sel:#d9b35b;--onsel:#2a1a10;--bg:#14100b;--surf:#1f1710;--surf2:#291e14;--ink:#f1e6d2;--muted:#b5a38c;--line:#3a2c1f;--earth:#2c1b10;--earth2:#4a3020;--wink:#6ab4f5;--leaf:#7fb35a;--dry:#f0904d;--warn:#f0a35a;color-scheme:dark}
 
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--dark); color: white; padding: 2rem 1.5rem; position: fixed; height: 100%; right: 0; z-index: 100; overflow-y: auto; }
-        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 2rem; }
-        
-        .logo { font-size: 1.4rem; font-weight: 800; margin-bottom: 2rem; color: var(--success); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
-        .nav-item { padding: 0.8rem 1rem; border-radius: 10px; margin-bottom: 0.5rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.6); }
-        .nav-item.active { background: var(--primary); color: white; }
-        .nav-item:hover { background: rgba(255,255,255,0.15); color: white; }
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "IBM Plex Sans Arabic",Tahoma,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:"Noto Kufi Arabic","IBM Plex Sans Arabic",sans-serif;margin:0;line-height:1.45;text-wrap:balance}
+h1{font-size:clamp(24px,6vw,30px);font-weight:800}
+h2{font-size:18px;font-weight:600}
+p{margin:0}
+a{color:var(--wink)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+.ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
 
-        /* Dashboard Elements */
-        .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
-        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; color: var(--dark); }
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 20px;border-radius:16px;border:1.5px solid transparent;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer;transition:background .2s,transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--water);color:#fff}
+.btn.dark{background:var(--earth);color:var(--on)}
+.btn.soft{background:var(--surf2);color:var(--ink);border-color:var(--line)}
+.btn.light{background:var(--on);color:#3d2618}
+.btn.ghost{background:none;color:var(--on);border-color:rgba(247,236,214,.4)}
+.btn.link{background:none;color:var(--wink);min-height:44px;padding:6px 10px}
+.btn.sm{min-height:44px;padding:6px 14px;font-size:15px;border-radius:12px}
+.btn.block{width:100%}
 
-        /* Form Grid */
-        .input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: #64748b; }
-        input, select { width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; background: white; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1); }
+/* welcome */
+#welcome{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.wtop{background:var(--earth);color:var(--on);padding:20px 20px 0;border-radius:0 0 32px 32px;overflow:hidden}
+.brand{display:flex;align-items:center;gap:10px;font:800 19px/1 "Noto Kufi Arabic",sans-serif;direction:ltr;justify-content:flex-end}
+.wtop svg.field{display:block;width:100%;max-width:520px;margin:24px auto 0;height:auto}
+.wbody{padding:28px 20px calc(28px + var(--safe));max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.wbody h1{font-size:clamp(26px,7vw,34px)}
+.feat{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.feat li{display:flex;gap:10px;align-items:flex-start}
+.feat .ico{color:var(--leaf);margin-top:2px}
+.wact{display:grid;gap:10px;margin-top:4px}
 
-        /* Buttons */
-        .btn { border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 700; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-calc { background: var(--primary); color: white; margin-top: 10px; }
-        .btn-calc:hover { background: var(--dark); }
-        .btn-valve { background: #64748b; color: white; }
-        .btn-valve.active { background: var(--success); animation: pulse 2s infinite; }
-        .btn-login { background: var(--accent); color: var(--dark); }
-        .btn-logout { background: #64748b; color: white; margin-top: 1rem; }
+/* app shell */
+.appbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.appbar .who{margin-inline-end:auto;line-height:1.3}
+.appbar .who b{display:block;font:800 17px/1.3 "Noto Kufi Arabic",sans-serif}
+.appbar .who small{color:var(--muted);font-size:13px}
+.av{width:44px;height:44px;border-radius:50%;border:0;background:var(--wheat);color:#3d2618;font:700 18px/1 "IBM Plex Sans Arabic",sans-serif;cursor:pointer}
+.mark{width:36px;height:36px;flex:none}
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:40;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surf);border-top:1px solid var(--line);padding:6px 6px calc(6px + var(--safe))}
+.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px;justify-content:center;color:var(--muted);text-decoration:none;font-size:13px;font-weight:600}
+.tabs a span.pill{display:grid;place-items:center;width:56px;height:30px;border-radius:99px;transition:background .2s}
+.tabs a[aria-current=page]{color:var(--ink)}
+.tabs a[aria-current=page] span.pill{background:rgba(47,143,224,.16);color:var(--wink)}
+.view{display:none;max-width:720px;margin:0 auto;padding:18px 16px calc(var(--tabh) + var(--safe) + 28px)}
+.view.on{display:block}
+.vhead{margin-bottom:16px}
+.vhead p{color:var(--muted);margin-top:2px}
+.stack{display:grid;gap:14px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:22px;padding:18px}
+.card h2{margin-bottom:12px}
 
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+/* yield hero */
+.hero{background:var(--earth);color:var(--on);border-radius:24px;padding:20px;display:grid;gap:14px}
+.hero small{color:var(--on2);font-size:14px}
+.hero h2{font-size:22px;font-weight:800}
+.yrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.yrow b{display:block;font:700 clamp(28px,8vw,38px)/1.15 "IBM Plex Sans Arabic",sans-serif;font-variant-numeric:tabular-nums}
+.yrow b span{font-size:16px;font-weight:500;color:var(--on2)}
+.yrow .cur{color:#f4a46a}
+.ybar{height:12px;border-radius:99px;background:rgba(255,255,255,.14);position:relative;overflow:hidden}
+.ybar i{position:absolute;top:0;bottom:0;right:0;border-radius:99px;background:linear-gradient(to left,#f4a46a,var(--wheat))}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{background:rgba(247,236,214,.12);border:1px solid rgba(247,236,214,.2);border-radius:99px;padding:4px 12px;font-size:14px}
+.hero .btn{justify-self:start}
 
-        /* Results Display */
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
-        .result-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+.empty{text-align:center;padding:28px 20px;display:grid;gap:10px;justify-items:center}
+.empty .ico{width:40px;height:40px;color:var(--wheat)}
+.empty p{color:var(--muted);max-width:34ch}
 
-        /* Yield Comparison Boxes */
-        .yield-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .yield-box { padding: 15px; border-radius: 12px; text-align: center; }
-        .yield-box.current { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .yield-box.ideal { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .yield-box b { font-size: 1.4rem; display: block; }
+.tile{display:flex;align-items:center;gap:14px}
+.tile .dot{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:var(--surf2);color:var(--muted);flex:none}
+.tile.open .dot{background:var(--water);color:#fff}
+.tile div.t{margin-inline-end:auto}
+.tile b{display:block}
+.tile small{color:var(--muted);font-size:14px}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:56px;height:32px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:right .2s}
+.sw:checked{background:var(--water)}
+.sw:checked::after{right:27px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.stats .card{padding:16px}
+.stats small{color:var(--muted);font-size:14px;display:block}
+.stats b{font:700 24px/1.3 "IBM Plex Sans Arabic",sans-serif;font-variant-numeric:tabular-nums}
 
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: white; border-radius: 24px; padding: 2rem; max-width: 450px; width: 90%; text-align: center; }
-        .modal-content input { width: 100%; margin-bottom: 1rem; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; }
-        .modal-content .btn { margin-top: 0.5rem; }
-        .switch-auth { color: var(--primary); cursor: pointer; margin-top: 1rem; display: inline-block; }
+/* form */
+fieldset{border:0;margin:0;padding:0;display:grid;gap:14px}
+legend{font:600 18px/1.45 "Noto Kufi Arabic",sans-serif;margin-bottom:12px;padding:0}
+.field{display:grid;gap:6px}
+.field>span,.lab{font-size:14px;font-weight:600;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+input[type=text],input[type=email],input[type=password],input[type=number],select{width:100%;min-height:52px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surf2);font-size:16px}
+input:focus,select:focus{outline:none;border-color:var(--water);box-shadow:0 0 0 3px rgba(47,143,224,.25)}
+.unit{position:relative}
+.unit input{padding-inline-end:58px}
+.unit em{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-style:normal;font-size:14px;color:var(--muted);pointer-events:none;direction:ltr}
+.el{font:700 15px/1.2 "IBM Plex Sans Arabic",sans-serif;color:var(--ink);direction:ltr;text-align:right}
+.el small{font-weight:500;font-size:13px;color:var(--muted)}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg label{position:relative;flex:1 1 auto}
+.seg input{position:absolute;opacity:0;inset:0;margin:0}
+.seg span{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surf2);font-weight:600;cursor:pointer;text-align:center;line-height:1.3}
+.seg input:checked+span{background:var(--sel);border-color:var(--sel);color:var(--onsel)}
+.seg input:focus-visible+span{outline:3px solid var(--water);outline-offset:2px}
+.opts{display:grid;gap:8px}
+.opts span{flex-direction:column;align-items:flex-start;text-align:start;padding:12px 14px}
+.opts small{font-weight:400;font-size:14px;opacity:.8}
+.hint{font-size:14px;color:var(--muted)}
+.err{color:var(--dry);font-size:15px;font-weight:600}
+.cta{position:sticky;bottom:calc(var(--tabh) + var(--safe) + 10px);margin-top:18px;z-index:5;box-shadow:0 12px 24px -12px rgba(47,143,224,.7)}
 
-        /* User info */
-        .user-info { display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.15); padding: 0.5rem 1rem; border-radius: 40px; margin-bottom: 1rem; }
-        .user-avatar { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--dark); }
+/* report */
+.alert{display:flex;gap:10px;align-items:flex-start;border-radius:16px;padding:12px 14px;font-size:15px}
+.alert.good{background:rgba(95,145,64,.15);color:var(--ink)}
+.alert.warn{background:rgba(217,114,47,.16);color:var(--ink)}
+.alert .ico{margin-top:2px}
+.nut{display:grid;grid-template-columns:3.4em minmax(0,1fr) 6.2em;gap:12px;align-items:center;padding:8px 0}
+.nut+.nut{border-top:1px solid var(--line)}
+.nut .nl b{display:block;font-size:18px}
+.nut .nl small{font-size:13px;color:var(--muted)}
+.bars{display:grid;gap:6px}
+.nbar{height:10px;border-radius:99px;background:var(--surf2);position:relative;overflow:hidden}
+.nbar i{position:absolute;top:0;bottom:0;right:0;border-radius:99px}
+.nbar.need i{background:var(--wheat)}
+.nv{text-align:left;font-variant-numeric:tabular-nums;font-weight:700}
+.nv small{display:block;font-weight:500;color:var(--muted);font-size:13px}
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:14px;color:var(--muted)}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.facts div{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:12px}
+.facts small{display:block;font-size:13px;color:var(--muted);line-height:1.4}
+.facts b{font:700 20px/1.4 "IBM Plex Sans Arabic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines{list-style:none;margin:0 0 16px;padding:0}
+.lines li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.lines li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines li.total{border-bottom:0;font-size:18px}
+.lines li.total b{color:var(--wink)}
 
-        @media (max-width: 1024px) { .grid-main { grid-template-columns: 1fr; } .sidebar { display: none; } .main-content { margin-right: 0; width: 100%; } }
-        
-        .hidden { display: none; }
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 0.8rem 1.8rem; border-radius: 50px; display: none; z-index: 3000; font-size: 0.9rem; }
-    </style>
+/* irrigation */
+.dial{display:grid;justify-items:center;gap:12px;padding:24px 16px;text-align:center}
+.dial svg{width:min(62vw,230px);height:auto}
+.dial .state{font:800 24px/1.4 "Noto Kufi Arabic",sans-serif}
+.ring{fill:none;stroke:var(--line);stroke-width:10}
+.core{fill:var(--surf2);stroke:var(--line);stroke-width:2;transition:fill .3s}
+.open .core{fill:var(--water);stroke:var(--water)}
+.dropi{fill:var(--muted);transition:fill .3s}
+.open .dropi{fill:#fff}
+.rip{fill:none;stroke:var(--water);stroke-width:3;opacity:0;transform-origin:110px 110px}
+.open .rip{animation:rip 2.4s ease-out infinite}
+.open .rip.b{animation-delay:1.2s}
+@keyframes rip{0%{opacity:.6;transform:scale(.6)}100%{opacity:0;transform:scale(1.05)}}
+.demo{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--warn);background:rgba(200,110,30,.12);border-radius:99px;padding:3px 12px}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.log li:last-child{border-bottom:0}
+
+/* history */
+.tabsw{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--surf2);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:14px}
+.tabsw button{min-height:42px;border:0;border-radius:10px;background:none;font-weight:600;cursor:pointer;color:var(--muted)}
+.tabsw button[aria-selected=true]{background:var(--surf);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.item{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center}
+.item b{font-size:17px}
+.item small{display:block;color:var(--muted);font-size:14px}
+.item .iv{text-align:left}
+.item .iv b{font-variant-numeric:tabular-nums}
+.item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+
+/* sheets, toast */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(20,12,6,.55);opacity:0;transition:opacity .2s}
+.scrim.open{opacity:1}
+.sheet{position:fixed;z-index:70;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:var(--surf);border-radius:26px 26px 0 0;padding:10px 20px calc(24px + var(--safe));max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease}
+.sheet.open{transform:none}
+.grab{width:44px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 12px}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.x{width:44px;height:44px;border-radius:50%;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer}
+.sheet form{display:grid;gap:12px}
+.toast{position:fixed;z-index:80;left:50%;bottom:calc(var(--tabh) + var(--safe) + 16px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:99px;font-size:15px;font-weight:600;box-shadow:0 8px 24px -8px rgba(0,0,0,.5);max-width:calc(100vw - 32px);text-align:center}
+.prof{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.prof .av{width:56px;height:56px;font-size:22px;cursor:default}
+pre.msg{white-space:pre-wrap;background:var(--surf2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font:15px/1.7 "IBM Plex Sans Arabic",sans-serif;margin:0 0 14px}
+
+@media (min-width:900px){
+  .tabs{top:0;bottom:0;right:0;left:auto;width:96px;grid-template-columns:none;grid-auto-rows:min-content;align-content:start;gap:8px;padding:84px 8px 16px;border-top:0;border-left:1px solid var(--line)}
+  #app{padding-right:96px}
+  .view{padding:28px 32px 48px;max-width:980px}
+  .cta{bottom:16px}
+  .toast{bottom:24px}
+  .repgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:start}
+  #welcome{flex-direction:row}
+  .wtop{flex:1;border-radius:0 0 0 40px;display:flex;flex-direction:column;justify-content:center;padding:40px}
+  .wbody{flex:1;justify-content:center;padding:48px}
+  .sheet{bottom:50%;transform:translateY(60%);border-radius:26px;opacity:0;transition:transform .25s,opacity .2s}
+  .sheet.open{transform:translateY(50%);opacity:1}
+}
+@media (max-width:380px){
+  .facts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .grid3{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.5L4.8 18.3A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.7L14 9.5V3M7 15h10"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5c3.8 4.6 6 7.8 6 10.5a6 6 0 0 1-12 0c0-2.7 2.2-5.9 6-10.5z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 2.5 20h19zM12 10v4M12 17.5v.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M10 6h11v10H10zM10 10H6l-3 3v3h7M17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+  <symbol id="i-seed" viewBox="0 0 24 24"><path d="M12 21v-9M12 12c0-4 3-7 8-7 0 5-3 7-8 7zM12 14c0-3-2.5-5.5-7-5.5 0 4 2.5 5.5 7 5.5z"/></symbol>
+  <symbol id="mk" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="8" fill="#d9b35b"/><path d="M8.5 8v16M13.5 8v16" stroke="#3d2618" stroke-width="2.4" stroke-linecap="round"/><path d="M22 8.5c3 4 4.6 6.4 4.6 8.6a4.6 4.6 0 0 1-9.2 0c0-2.2 1.6-4.6 4.6-8.6z" fill="#2f8fe0"/></symbol>
+</svg>
 
-    <aside class="sidebar">
-        <div class="logo"><i class="fas fa-microchip"></i> AgriSmart <span>v7.0</span></div>
-        <div id="sidebarUserInfo" class="user-info" style="display: none;">
-            <div class="user-avatar" id="userAvatar">م</div>
-            <div><span id="sidebarUserName"></span><br><small style="font-size:0.7rem;">مستخدم</small></div>
-        </div>
-        <nav>
-            <div class="nav-item active" onclick="showTab('dashboard')"><i class="fas fa-home"></i> الرئيسة</div>
-            <div class="nav-item" onclick="showTab('lab')"><i class="fas fa-vial"></i> مختبر النانو</div>
-            <div class="nav-item" onclick="showTab('factory')"><i class="fas fa-industry"></i> مصنع واد الحراش</div>
-            <div class="nav-item" onclick="showTab('iot')"><i class="fas fa-broadcast-tower"></i> أجهزة IoT</div>
-            <div class="nav-item" onclick="showTab('history')"><i class="fas fa-history"></i> سجلات الحقل</div>
-        </nav>
-        <button id="logoutBtn" class="btn btn-logout" style="margin-top: 2rem; display: none;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
-    </aside>
-
-    <main class="main-content">
-        <div style="background: linear-gradient(90deg, var(--dark), var(--primary)); color: white; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 style="font-weight: 800;">محطة استخلاص الأسمدة العضوية</h2>
-                <p style="opacity: 0.8;">تحليل المردود الحالي مقابل المثالي بناءً على جودة التربة</p>
-            </div>
-            <div id="headerAuthButtons" style="display: flex; gap: 10px;">
-                <button class="btn btn-login" style="background: white; color: var(--primary);" onclick="openModal('login')"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
-                <button class="btn btn-login" style="background: var(--accent); color: white;" onclick="openModal('signup')"><i class="fas fa-user-plus"></i> إنشاء حساب</button>
-            </div>
-            <div id="headerUserInfo" style="display: none; align-items: center; gap: 1rem; background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 40px;">
-                <i class="fas fa-user-circle"></i>
-                <span id="headerUserName"></span>
-            </div>
-        </div>
-
-        <div id="mainContent" style="display: none;">
-            <div class="grid-main">
-                <div class="left-col">
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-sliders-h"></i> إدخال بيانات التحليل الشامل</div>
-                        
-                        <div class="input-grid">
-                            <div class="form-group">
-                                <label>نوع المحصول</label>
-                                <select id="cropType">
-                                    <option value="طماطم">طماطم</option>
-                                    <option value="بطاطا">بطاطا</option>
-                                    <option value="قمح">قمح</option>
-                                    <option value="حمضيات">حمضيات</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>المساحة (هكتار)</label>
-                                <input type="number" id="area" value="1" step="0.1">
-                            </div>
-                            <div class="form-group">
-                                <label>المردود المرجعي (طن/هكتار)</label>
-                                <input type="number" id="refYield" value="80" disabled>
-                            </div>
-                        </div>
-
-                        <label style="color: #d97706; margin-top: 10px; border-top: 1px solid #eee; padding-top: 15px;"><i class="fas fa-layer-group"></i> الخصائص الفيزيائية واستراتيجية الإنتاج</label>
-                        <div class="input-grid">
-                            <div class="form-group">
-                                <label>نسيج التربة (Soil Type)</label>
-                                <select id="soilType">
-                                    <option value="loamy">تربة ليمونية (متوازنة)</option>
-                                    <option value="sandy">تربة رملية (نفاذة للماء)</option>
-                                    <option value="clay">تربة طينية (تحتفظ بالماء)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>المادة العضوية (%)</label>
-                                <input type="number" id="organicMatter" placeholder="مثال: 1.5" step="0.1" min="0" max="10" value="1.5">
-                            </div>
-                            <div class="form-group">
-                                <label>المحصول في الموسم السابق</label>
-                                <select id="prevCrop">
-                                    <option value="none">مختلف / أرض بور</option>
-                                    <option value="legume">بقوليات (تثبت النيتروجين)</option>
-                                    <option value="same_family">محصول من نفس العائلة</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>الهدف الإنتاجي</label>
-                                <select id="prodStrategy">
-                                    <option value="intensive">إنتاج مكثف (أقصى مردود)</option>
-                                    <option value="economic">توفير التكاليف (اقتصادي)</option>
-                                    <option value="organic">زراعة عضوية 100%</option>
-                                </select>
-                            </div>
-                        </div>
-                        <label style="color: var(--primary); margin-top: 10px; border-top: 1px solid #eee; padding-top: 15px;"><i class="fas fa-atom"></i> العناصر الكبرى (NPK)</label>
-                        <div class="input-grid">
-                            <div class="form-group"><input type="number" id="soilN" placeholder="N (ppm)" value="45"></div>
-                            <div class="form-group"><input type="number" id="soilP" placeholder="P (ppm)" value="20"></div>
-                            <div class="form-group"><input type="number" id="soilK" placeholder="K (ppm)" value="150"></div>
-                        </div>
-
-                        <label style="color: #6366f1;"><i class="fas fa-vials"></i> العناصر الثانوية والصغرى</label>
-                        <div class="input-grid">
-                            <div class="form-group"><input type="number" id="soilCa" placeholder="Ca (ppm)" value="2000"></div>
-                            <div class="form-group"><input type="number" id="soilMg" placeholder="Mg (ppm)" value="300"></div>
-                            <div class="form-group"><input type="number" id="soilFe" placeholder="Fe (ppm)" value="12"></div>
-                        </div>
-
-                        <label style="color: #f43f5e;"><i class="fas fa-thermometer-half"></i> خصائص التربة (pH, EC)</label>
-                        <div class="input-grid">
-                            <div class="form-group"><input type="number" id="soilPH" placeholder="pH" step="0.1" value="7.2"></div>
-                            <div class="form-group"><input type="number" id="soilEC" placeholder="EC" step="0.1" value="1.5"></div>
-                            <div class="form-group">
-                                <select id="waterSource">
-                                    <option value="1">ماء عذب</option>
-                                    <option value="0.8">ماء مالح قليلاً</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-calc" onclick="calculateFinal()">
-                            <i class="fas fa-calculator"></i> تحليل الفارق الإنتاجي وإرسال للمصنع
-                        </button>
-                    </div>
-
-                    <div id="resultsCard" class="card" style="display:none;">
-                        <div class="card-title"><i class="fas fa-chart-line"></i> تقرير المردود المتوقع</div>
-                        
-                        <div class="yield-summary">
-                            <div class="yield-box current">
-                                <small>المردود الحالي (بدون تدخل)</small>
-                                <b id="resCurrentYield">0</b> طن
-                            </div>
-                            <div class="yield-box ideal">
-                                <small>المردود المثالي (بعد المعالجة)</small>
-                                <b id="resIdealYield">0</b> طن
-                            </div>
-                        </div>
-
-                        <div id="yieldReport" style="margin-bottom: 1.5rem;"></div>
-                        <div class="chart-container">
-                            <canvas id="mainChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="right-col">
-                    <div class="card">
-                        <div class="card-title"><i class="fas fa-wifi"></i> التحكم المباشر (IoT)</div>
-                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">حالة الصمامات بناءً على التحليل الميداني.</p>
-                        
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                            <span id="valveLabel">صمام الحقل الرئيسي: مغلق</span>
-                            <button id="valveBtn" class="btn btn-valve" style="margin-top:10px;" onclick="toggleValve()">
-                                <i class="fas fa-power-off"></i> فتح الصمام
-                            </button>
-                        </div>
-
-                        <div class="result-item"><span>الاحتياج المائي المقدر:</span> <strong id="resWater">0</strong> م³</div>
-                        <div class="result-item"><span>معامل التربة الفيزيائي:</span> <strong id="resEfficiency">0</strong>%</div>
-                    </div>
-
-                    <div class="card" style="background: #fffbeb; border-color: #fef3c7;">
-                        <div class="card-title" style="color: #92400e;"><i class="fas fa-boxes"></i> الطلبية المطلوبة من المصنع</div>
-                        <div id="factoryDetails">
-                            <p style="font-size: 0.85rem;">بانتظار إجراء الحسابات...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="welcomeMessage" class="card" style="text-align: center; padding: 3rem;">
-            <i class="fas fa-seedling" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
-            <h3>مرحباً بك في AgriSmart Hub</h3>
-            <p style="margin: 1rem 0;">منصة متكاملة لإدارة الأسمدة والري باستخدام الذكاء الاصطناعي وإنترنت الأشياء</p>
-            <p style="color: var(--primary);">🚀 سجل دخولك للوصول إلى جميع الميزات:</p>
-            <ul style="list-style: none; margin-top: 1rem;">
-                <li>✅ تحليل المردودية بقانون ليبج</li>
-                <li>✅ حساب العناصر الناقصة بدقة</li>
-                <li>✅ طلب السماد المخصص من مصنع واد الحراش</li>
-                <li>✅ التحكم عن بعد في صمامات الري</li>
-            </ul>
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn btn-login" style="background: var(--primary); color: white; width: auto; padding: 0.8rem 2rem;" onclick="openModal('login')">تسجيل الدخول</button>
-                <button class="btn btn-login" style="background: var(--accent); color: white; width: auto; padding: 0.8rem 2rem;" onclick="openModal('signup')">إنشاء حساب جديد</button>
-            </div>
-        </div>
-    </main>
-
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <i class="fas fa-seedling" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-            <h3 id="modalTitle">تسجيل الدخول</h3>
-            <div id="loginForm">
-                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
-                <input type="password" id="loginPassword" placeholder="كلمة المرور">
-                <button class="btn btn-calc" onclick="login()">دخول</button>
-            </div>
-            <div id="signupForm" style="display: none;">
-                <input type="text" id="signupName" placeholder="الاسم الكامل">
-                <input type="email" id="signupEmail" placeholder="البريد الإلكتروني">
-                <input type="password" id="signupPassword" placeholder="كلمة المرور (6 أحرف على الأقل)">
-                <input type="text" id="signupFarm" placeholder="اسم المزرعة (اختياري)">
-                <button class="btn btn-calc" onclick="signup()">إنشاء حساب</button>
-            </div>
-            <p style="margin-top: 1rem;" id="switchText">ليس لديك حساب؟ <span class="switch-auth" onclick="toggleAuthMode()">إنشاء حساب</span></p>
-            <button class="btn" style="background: #e2e8f0; margin-top: 1rem;" onclick="closeModal()">إلغاء</button>
-        </div>
+<!-- Welcome (signed out) -->
+<div id="welcome" hidden>
+  <div class="wtop">
+    <div class="brand">AgriSmart Hub <svg class="mark" aria-hidden="true"><use href="#mk"/></svg></div>
+    <svg class="field" viewBox="0 0 360 230" aria-hidden="true">
+      <rect width="360" height="230" rx="18" fill="#5b3b25"/>
+      <polygon points="244,12 348,16 346,106 242,104" fill="#d6ae55"/>
+      <polygon points="128,10 232,13 231,104 130,104" fill="#ccb36c"/>
+      <polygon points="12,14 118,10 120,104 14,107" fill="#6d9944"/>
+      <polygon points="242,126 346,124 348,216 244,220" fill="#a39b6a"/>
+      <polygon points="130,126 231,126 233,220 128,218" fill="#5d8a45"/>
+      <polygon points="14,124 120,126 118,216 12,214" fill="#8fa756"/>
+      <g stroke="#a98433" stroke-width="2.5" opacity=".6"><path d="M252 14v92M262 14v92M272 14v92M282 14v92M292 14v92M302 15v92M312 15v92M322 15v92M332 15v92M342 15v92"/></g>
+      <g stroke="#4b7a2b" stroke-width="2.5" opacity=".6"><path d="M22 13v94M32 13v94M42 12v94M52 12v94M62 12v94M72 11v94M82 11v94M92 11v94M102 11v94M112 11v94"/></g>
+      <g fill="#5f6b3a"><circle cx="258" cy="142" r="6"/><circle cx="280" cy="142" r="6"/><circle cx="302" cy="142" r="6"/><circle cx="324" cy="142" r="6"/><circle cx="258" cy="166" r="6"/><circle cx="280" cy="166" r="6"/><circle cx="302" cy="166" r="6"/><circle cx="324" cy="166" r="6"/><circle cx="258" cy="190" r="6"/><circle cx="280" cy="190" r="6"/><circle cx="302" cy="190" r="6"/><circle cx="324" cy="190" r="6"/></g>
+      <g fill="#eef3ea" opacity=".5"><rect x="138" y="126" width="22" height="93" rx="11"/><rect x="170" y="126" width="22" height="93" rx="11"/><rect x="202" y="126" width="22" height="93" rx="11"/></g>
+      <path d="M0 115H360" stroke="#7a573b" stroke-width="8"/><path d="M0 115H360" stroke="#2f8fe0" stroke-width="3" stroke-dasharray="5 7"/>
+      <g stroke="#fff" stroke-width="2"><circle cx="294" cy="108" r="5" fill="#2f8fe0"/><circle cx="180" cy="108" r="5" fill="#e9dcc3"/><circle cx="66" cy="108" r="5" fill="#2f8fe0"/><circle cx="294" cy="122" r="5" fill="#e9dcc3"/><circle cx="180" cy="122" r="5" fill="#2f8fe0"/><circle cx="66" cy="122" r="5" fill="#e9dcc3"/></g>
+    </svg>
+  </div>
+  <div class="wbody">
+    <h1>تربتك وسقيك وسمادك في تطبيق واحد</h1>
+    <p class="muted">أدخل نتائج تحليل التربة، واعرف كم من المردود يضيع منك، وكم تحتاج من السماد، وتحكّم في صمّام الري.</p>
+    <ul class="feat">
+      <li><svg class="ico"><use href="#i-check"/></svg>تحليل المردود بقانون ليبيغ للحد الأدنى</li>
+      <li><svg class="ico"><use href="#i-check"/></svg>حساب العناصر الناقصة بالكيلوغرام</li>
+      <li><svg class="ico"><use href="#i-check"/></svg>طلبية سماد مخصّصة لحقلك</li>
+      <li><svg class="ico"><use href="#i-check"/></svg>التحكم في صمّام الري</li>
+    </ul>
+    <div class="wact">
+      <button class="btn pri block" type="button" data-auth="signup">إنشاء حساب</button>
+      <button class="btn soft block" type="button" data-auth="login">تسجيل الدخول</button>
+      <button class="btn link" type="button" id="guest">جرّب دون حساب</button>
     </div>
+  </div>
+</div>
 
-    <div class="toast" id="toast">تنبيه</div>
+<!-- App (signed in) -->
+<div id="app" hidden>
+  <header class="appbar">
+    <svg class="mark" aria-hidden="true"><use href="#mk"/></svg>
+    <div class="who"><b>AgriSmart</b><small id="farm"></small></div>
+    <button class="av" id="av" type="button" aria-label="الحساب"></button>
+  </header>
 
-    <script>
-    // ==================== نظام المستخدمين ====================
-    let users = JSON.parse(localStorage.getItem('agrismart_users')) || [];
-    let currentUser = JSON.parse(localStorage.getItem('agrismart_current_user')) || null;
+  <nav class="tabs" aria-label="التنقل">
+    <a href="#home" data-v="home"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>الرئيسية</a>
+    <a href="#analyze" data-v="analyze"><span class="pill"><svg class="ico"><use href="#i-flask"/></svg></span>التحليل</a>
+    <a href="#irrigation" data-v="irrigation"><span class="pill"><svg class="ico"><use href="#i-drop"/></svg></span>الري</a>
+    <a href="#history" data-v="history"><span class="pill"><svg class="ico"><use href="#i-clock"/></svg></span>السجل</a>
+  </nav>
 
-    let myChart = null;
-    let valveState = false;
+  <main>
+    <section class="view" id="v-home" aria-labelledby="hello">
+      <div class="vhead"><h1 id="hello">أهلاً</h1><p>هذه حالة حقلك اليوم.</p></div>
+      <div class="stack">
+        <div id="h-hero"></div>
+        <div class="card tile" id="h-valve">
+          <span class="dot"><svg class="ico"><use href="#i-drop"/></svg></span>
+          <div class="t"><b>صمّام الحقل الرئيسي</b><small id="h-vs">مغلق</small></div>
+          <input class="sw" type="checkbox" id="h-sw" role="switch" aria-label="فتح صمّام الحقل الرئيسي">
+        </div>
+        <div class="stats">
+          <div class="card"><small>تحاليل محفوظة</small><b id="h-n">0</b></div>
+          <div class="card"><small>الاحتياج المائي</small><b id="h-w">—</b></div>
+        </div>
+      </div>
+    </section>
 
-    const cropRequirements = {
-        "طماطم": { maxYield: 85, targetN: 220, targetP: 85, targetK: 350, waterBase: 600 },
-        "بطاطا": { maxYield: 60, targetN: 190, targetP: 75, targetK: 400, waterBase: 500 },
-        "قمح": { maxYield: 18, targetN: 140, targetP: 60, targetK: 120, waterBase: 350 },
-        "حمضيات": { maxYield: 45, targetN: 170, targetP: 55, targetK: 280, waterBase: 800 }
-    };
+    <section class="view" id="v-analyze" aria-labelledby="an-t">
+      <div class="vhead"><h1 id="an-t">تحليل جديد</h1><p>أدخل نتائج تحليل التربة لحقلك.</p></div>
+      <form id="f-an" class="stack" novalidate>
+        <div class="card"><fieldset>
+          <legend>المحصول والأرض</legend>
+          <div class="seg" role="radiogroup" aria-label="نوع المحصول">
+            <label><input type="radio" name="crop" value="طماطم" checked><span>طماطم</span></label>
+            <label><input type="radio" name="crop" value="بطاطا"><span>بطاطا</span></label>
+            <label><input type="radio" name="crop" value="قمح"><span>قمح</span></label>
+            <label><input type="radio" name="crop" value="حمضيات"><span>حمضيات</span></label>
+          </div>
+          <div class="grid2">
+            <label class="field"><span>المساحة</span><div class="unit"><input type="number" name="area" value="1" step="0.1" min="0.1" inputmode="decimal"><em>هكتار</em></div></label>
+            <div class="field"><span>المردود المرجعي</span><div class="unit"><input type="text" id="ref" readonly tabindex="-1" aria-readonly="true"><em>طن/هـ</em></div></div>
+          </div>
+        </fieldset></div>
 
-    // ==================== وظائف المصادقة ====================
-    function initAuth() {
-        if(currentUser) {
-            document.getElementById('headerAuthButtons').style.display = 'none';
-            document.getElementById('headerUserInfo').style.display = 'flex';
-            document.getElementById('headerUserName').innerHTML = currentUser.name;
-            document.getElementById('sidebarUserInfo').style.display = 'flex';
-            document.getElementById('sidebarUserName').innerHTML = currentUser.name;
-            document.getElementById('userAvatar').innerHTML = currentUser.name.charAt(0);
-            document.getElementById('logoutBtn').style.display = 'block';
-            document.getElementById('welcomeMessage').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
-        } else {
-            document.getElementById('headerAuthButtons').style.display = 'flex';
-            document.getElementById('headerUserInfo').style.display = 'none';
-            document.getElementById('sidebarUserInfo').style.display = 'none';
-            document.getElementById('logoutBtn').style.display = 'none';
-            document.getElementById('welcomeMessage').style.display = 'block';
-            document.getElementById('mainContent').style.display = 'none';
-        }
-    }
+        <div class="card"><fieldset>
+          <legend>التربة والهدف</legend>
+          <div class="field"><span class="lab">نسيج التربة</span>
+            <div class="seg" role="radiogroup" aria-label="نسيج التربة">
+              <label><input type="radio" name="soilType" value="loamy" checked><span>ليمونية</span></label>
+              <label><input type="radio" name="soilType" value="sandy"><span>رملية</span></label>
+              <label><input type="radio" name="soilType" value="clay"><span>طينية</span></label>
+            </div>
+          </div>
+          <div class="grid2">
+            <label class="field"><span>المادة العضوية</span><div class="unit"><input type="number" name="om" value="1.5" step="0.1" min="0" max="10" inputmode="decimal"><em>%</em></div></label>
+            <label class="field"><span>محصول الموسم السابق</span>
+              <select name="prev"><option value="none">مختلف أو أرض بور</option><option value="legume">بقوليات</option><option value="same_family">من نفس العائلة</option></select>
+            </label>
+          </div>
+          <div class="field"><span class="lab">الهدف الإنتاجي</span>
+            <div class="seg opts" role="radiogroup" aria-label="الهدف الإنتاجي">
+              <label><input type="radio" name="strat" value="intensive" checked><span>إنتاج مكثّف<small>أقصى مردود ممكن</small></span></label>
+              <label><input type="radio" name="strat" value="economic"><span>اقتصادي<small>هدف أقل بـ20% لتوفير التكاليف</small></span></label>
+              <label><input type="radio" name="strat" value="organic"><span>زراعة عضوية<small>سماد عضوي فقط</small></span></label>
+            </div>
+          </div>
+        </fieldset></div>
 
-    function openModal(type) {
-        document.getElementById('authModal').style.display = 'flex';
-        if(type === 'login') {
-            document.getElementById('modalTitle').innerText = 'تسجيل الدخول';
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('switchText').innerHTML = 'ليس لديك حساب؟ <span class="switch-auth" onclick="toggleAuthMode()">إنشاء حساب</span>';
-        } else {
-            document.getElementById('modalTitle').innerText = 'إنشاء حساب جديد';
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
-            document.getElementById('switchText').innerHTML = 'لديك حساب؟ <span class="switch-auth" onclick="toggleAuthMode()">تسجيل الدخول</span>';
-        }
-    }
+        <div class="card"><fieldset>
+          <legend>العناصر الكبرى</legend>
+          <div class="grid3">
+            <label class="field"><span class="el">N <small>ppm</small></span><input type="number" name="N" value="45" min="0" inputmode="decimal" aria-label="نيتروجين"></label>
+            <label class="field"><span class="el">P <small>ppm</small></span><input type="number" name="P" value="20" min="0" inputmode="decimal" aria-label="فوسفور"></label>
+            <label class="field"><span class="el">K <small>ppm</small></span><input type="number" name="K" value="150" min="0" inputmode="decimal" aria-label="بوتاسيوم"></label>
+          </div>
+          <div class="grid2">
+            <label class="field"><span>الحموضة</span><div class="unit"><input type="number" name="pH" value="7.2" step="0.1" min="3" max="10" inputmode="decimal"><em>pH</em></div></label>
+            <label class="field"><span>الملوحة</span><div class="unit"><input type="number" name="EC" value="1.5" step="0.1" min="0" inputmode="decimal"><em>dS/m</em></div></label>
+          </div>
+        </fieldset></div>
 
-    function toggleAuthMode() {
-        if(document.getElementById('loginForm').style.display === 'block') {
-            openModal('signup');
-        } else {
-            openModal('login');
-        }
-    }
+        <div class="card"><fieldset>
+          <legend>العناصر الثانوية ومصدر الماء</legend>
+          <div class="grid3">
+            <label class="field"><span class="el">Ca <small>ppm</small></span><input type="number" name="Ca" value="2000" min="0" inputmode="decimal" aria-label="كالسيوم"></label>
+            <label class="field"><span class="el">Mg <small>ppm</small></span><input type="number" name="Mg" value="300" min="0" inputmode="decimal" aria-label="مغنيسيوم"></label>
+            <label class="field"><span class="el">Fe <small>ppm</small></span><input type="number" name="Fe" value="12" min="0" inputmode="decimal" aria-label="حديد"></label>
+          </div>
+          <label class="field"><span>مصدر الماء</span><select name="water"><option value="1">ماء عذب</option><option value="0.8">ماء مالح قليلاً</option></select></label>
+          <p class="hint">تُحفظ هذه القيم في السجل مع التحليل.</p>
+        </fieldset></div>
 
-    function closeModal() {
-        document.getElementById('authModal').style.display = 'none';
-    }
+        <p class="err" id="an-err" role="alert" hidden></p>
+        <button class="btn pri block cta" type="submit"><svg class="ico"><use href="#i-flask"/></svg>حلّل التربة</button>
+      </form>
+    </section>
 
-    function signup() {
-        let name = document.getElementById('signupName').value;
-        let email = document.getElementById('signupEmail').value;
-        let password = document.getElementById('signupPassword').value;
-        let farm = document.getElementById('signupFarm').value;
-        
-        if(!name || !email || !password) {
-            showToast('⚠️ الرجاء ملء جميع الحقول الأساسية');
-            return;
-        }
-        if(password.length < 6) {
-            showToast('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-            return;
-        }
-        if(users.find(u => u.email === email)) {
-            showToast('⚠️ هذا البريد مسجل مسبقاً');
-            return;
-        }
-        
-        let newUser = {
-            id: Date.now(),
-            name: name,
-            email: email,
-            password: password,
-            farm: farm || 'مزرعتي',
-            createdAt: new Date().toISOString(),
-            analyses: []
-        };
-        
-        users.push(newUser);
-        localStorage.setItem('agrismart_users', JSON.stringify(users));
-        currentUser = newUser;
-        localStorage.setItem('agrismart_current_user', JSON.stringify(currentUser));
-        
-        showToast('✅ تم إنشاء الحساب بنجاح');
-        closeModal();
-        initAuth();
-        loadUserAnalyses();
-    }
+    <section class="view" id="v-report" aria-label="تقرير المردود"><div id="rep"></div></section>
 
-    function login() {
-        let email = document.getElementById('loginEmail').value;
-        let password = document.getElementById('loginPassword').value;
-        
-        let user = users.find(u => u.email === email && u.password === password);
-        if(user) {
-            currentUser = user;
-            localStorage.setItem('agrismart_current_user', JSON.stringify(currentUser));
-            showToast('✅ مرحباً بك ' + user.name);
-            closeModal();
-            initAuth();
-            loadUserAnalyses();
-        } else {
-            showToast('❌ البريد أو كلمة المرور غير صحيحة');
-        }
-    }
+    <section class="view" id="v-irrigation" aria-labelledby="ir-t">
+      <div class="vhead"><h1 id="ir-t">الري</h1><p>صمّام الحقل الرئيسي.</p></div>
+      <div class="stack">
+        <div class="card dial" id="dial">
+          <svg viewBox="0 0 220 220" aria-hidden="true">
+            <circle class="rip" cx="110" cy="110" r="100"/><circle class="rip b" cx="110" cy="110" r="100"/>
+            <circle class="ring" cx="110" cy="110" r="92"/>
+            <circle class="core" cx="110" cy="110" r="70"/>
+            <path class="dropi" d="M110 72c14 17 22 29 22 39a22 22 0 0 1-44 0c0-10 8-22 22-39z"/>
+          </svg>
+          <div class="state" id="ir-state">مغلق</div>
+          <div class="muted num" id="ir-since"></div>
+          <button class="btn pri block" type="button" id="ir-btn">افتح الصمّام</button>
+          <span class="demo"><svg class="ico" style="width:16px;height:16px"><use href="#i-alert"/></svg>وضع المحاكاة: الصمّام غير مربوط بجهاز بعد</span>
+        </div>
+        <div class="card"><h2>الاحتياج المائي المقدّر</h2><p id="ir-need" class="muted">أجرِ تحليلاً ليُحسب احتياج حقلك من الماء.</p></div>
+        <div class="card"><h2>آخر العمليات</h2><ul class="log" id="ir-log"></ul></div>
+      </div>
+    </section>
 
-    function logout() {
-        currentUser = null;
-        localStorage.removeItem('agrismart_current_user');
-        showToast('👋 تم تسجيل الخروج');
-        initAuth();
-    }
+    <section class="view" id="v-history" aria-labelledby="hi-t">
+      <div class="vhead"><h1 id="hi-t">السجل</h1><p>تحاليلك وطلبيات السماد.</p></div>
+      <div class="tabsw" role="tablist">
+        <button type="button" role="tab" id="tb-a" aria-selected="true">التحاليل</button>
+        <button type="button" role="tab" id="tb-o" aria-selected="false">الطلبيات</button>
+      </div>
+      <div id="hi-list"></div>
+    </section>
+  </main>
+</div>
 
-    function loadUserAnalyses() {
-        if(currentUser && currentUser.analyses && currentUser.analyses.length > 0) {
-            let lastAnalysis = currentUser.analyses[currentUser.analyses.length - 1];
-            document.getElementById('soilN').value = lastAnalysis.N || 45;
-            document.getElementById('soilP').value = lastAnalysis.P || 20;
-            document.getElementById('soilK').value = lastAnalysis.K || 150;
-            document.getElementById('soilPH').value = lastAnalysis.pH || 7.2;
-        }
-    }
+<div class="scrim" id="scrim" hidden></div>
 
-    function saveAnalysisToUser(N, P, K, pH, currentYield, idealYield) {
-        if(currentUser) {
-            if(!currentUser.analyses) currentUser.analyses = [];
-            currentUser.analyses.push({
-                date: new Date().toLocaleString(),
-                N, P, K, pH,
-                currentYield, idealYield,
-                crop: document.getElementById('cropType').value,
-                area: parseFloat(document.getElementById('area').value)
-            });
-            localStorage.setItem('agrismart_current_user', JSON.stringify(currentUser));
-            let userIndex = users.findIndex(u => u.id === currentUser.id);
-            if(userIndex !== -1) users[userIndex] = currentUser;
-            localStorage.setItem('agrismart_users', JSON.stringify(users));
-        }
-    }
+<div class="sheet" id="s-auth" role="dialog" aria-modal="true" aria-labelledby="au-t" hidden>
+  <div class="grab"></div>
+  <div class="shead"><h2 id="au-t">تسجيل الدخول</h2><button class="x" type="button" data-close aria-label="إغلاق"><svg class="ico"><use href="#i-x"/></svg></button></div>
+  <div class="tabsw" role="tablist">
+    <button type="button" role="tab" data-mode="login" aria-selected="true">دخول</button>
+    <button type="button" role="tab" data-mode="signup" aria-selected="false">حساب جديد</button>
+  </div>
+  <form id="f-login" novalidate>
+    <label class="field"><span>البريد الإلكتروني</span><input type="email" id="li-email" autocomplete="email" dir="ltr"></label>
+    <label class="field"><span>كلمة المرور</span><input type="password" id="li-pass" autocomplete="current-password" dir="ltr"></label>
+    <p class="err" id="li-err" role="alert" hidden></p>
+    <button class="btn pri block" type="submit">دخول</button>
+  </form>
+  <form id="f-signup" novalidate hidden>
+    <label class="field"><span>الاسم الكامل</span><input type="text" id="su-name" autocomplete="name"></label>
+    <label class="field"><span>البريد الإلكتروني</span><input type="email" id="su-email" autocomplete="email" dir="ltr"></label>
+    <label class="field"><span>كلمة المرور (6 أحرف على الأقل)</span><input type="password" id="su-pass" autocomplete="new-password" dir="ltr"></label>
+    <label class="field"><span>اسم المزرعة (اختياري)</span><input type="text" id="su-farm"></label>
+    <p class="err" id="su-err" role="alert" hidden></p>
+    <button class="btn pri block" type="submit">إنشاء الحساب</button>
+  </form>
+  <p class="hint" style="margin-top:12px">الحساب محفوظ على هذا الهاتف فقط.</p>
+</div>
 
-    // ==================== وظائف التحليل (تم دمج الإضافات الجديدة هنا) ====================
-    function calculateFinal() {
-        if(!currentUser) {
-            showToast('⚠️ الرجاء تسجيل الدخول أولاً');
-            openModal('login');
-            return;
-        }
-        
-        const crop = document.getElementById('cropType').value;
-        const area = parseFloat(document.getElementById('area').value);
-        const req = cropRequirements[crop];
+<div class="sheet" id="s-acc" role="dialog" aria-modal="true" aria-labelledby="ac-t" hidden>
+  <div class="grab"></div>
+  <div class="shead"><h2 id="ac-t">الحساب</h2><button class="x" type="button" data-close aria-label="إغلاق"><svg class="ico"><use href="#i-x"/></svg></button></div>
+  <div class="prof"><span class="av" id="ac-av"></span><div><b id="ac-name"></b><div class="muted" id="ac-mail"></div><div class="muted" id="ac-farm"></div></div></div>
+  <button class="btn soft block" type="button" id="logout">تسجيل الخروج</button>
+</div>
 
-        // 1. جلب المدخلات الجديدة
-        const soilType = document.getElementById('soilType').value;
-        const organicMatter = parseFloat(document.getElementById('organicMatter').value);
-        const prevCrop = document.getElementById('prevCrop').value;
-        const prodStrategy = document.getElementById('prodStrategy').value;
+<div class="sheet" id="s-order" role="dialog" aria-modal="true" aria-labelledby="or-t" hidden>
+  <div class="grab"></div>
+  <div class="shead"><h2 id="or-t">طلب السماد</h2><button class="x" type="button" data-close aria-label="إغلاق"><svg class="ico"><use href="#i-x"/></svg></button></div>
+  <p class="muted" style="margin-bottom:12px">الطلب محفوظ في السجل. أرسله لنا عبر واتساب لنؤكّده معك.</p>
+  <pre class="msg" id="or-msg"></pre>
+  <div class="stack">
+    <a class="btn pri block" id="or-wa" href="#" target="_blank" rel="noopener">أرسل عبر واتساب</a>
+    <button class="btn soft block" type="button" id="or-copy"><svg class="ico"><use href="#i-copy"/></svg>انسخ النص</button>
+  </div>
+</div>
 
-        const soilData = {
-            n: parseFloat(document.getElementById('soilN').value) * 2.4,
-            p: parseFloat(document.getElementById('soilP').value) * 2.4,
-            k: parseFloat(document.getElementById('soilK').value) * 2.4,
-            ph: parseFloat(document.getElementById('soilPH').value)
-        };
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-        // 2. تطبيق تأثير "الهدف الإنتاجي" (Production Strategy)
-        let strategyFactor = 1.0; 
-        if(prodStrategy === 'economic') strategyFactor = 0.8; // المزارع يريد توفير المال، فنقلل الهدف
-        if(prodStrategy === 'organic') strategyFactor = 0.9;  // الإنتاج العضوي يعطي مردوداً أقل بقليل من الكيماوي المكثف
-        
-        let adjustedTargetN = req.targetN * strategyFactor;
-        let adjustedTargetP = req.targetP * strategyFactor;
-        let adjustedTargetK = req.targetK * strategyFactor;
-        let maxYieldAdjusted = req.maxYield * strategyFactor;
+<script>
+{
+const $=s=>document.querySelector(s),$$=s=>Array.prototype.slice.call(document.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const x=parseFloat(String(v).replace(',','.'));return isFinite(x)?x:NaN};
+const def=(v,d)=>(v===undefined||v===null||v===''||(typeof v==='number'&&isNaN(v)))?d:v;
+const fmt=(x,d)=>Number(x).toLocaleString('en-US',{maximumFractionDigits:d===undefined?1:d,minimumFractionDigits:d===undefined?1:d});
+const ic=id=>`<svg class="ico"><use href="#${id}"/></svg>`;
+const st={
+  get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+const WA='213554083202';
 
-        // 3. تطبيق تأثير "الدورة الزراعية" (Crop Rotation)
-        let rotationAlert = "";
-        if(prevCrop === 'legume') {
-            adjustedTargetN = adjustedTargetN * 0.8; // البقوليات تثبت النيتروجين في التربة، فنقلل من السماد المطلوب
-            rotationAlert = "<span style='color:var(--success); font-size:0.8rem;'><i class='fas fa-info-circle'></i> تم خصم 20% من النيتروجين بفضل زراعة البقوليات سابقاً.</span><br>";
-        } else if (prevCrop === 'same_family') {
-            rotationAlert = "<span style='color:var(--danger); font-size:0.8rem;'><i class='fas fa-exclamation-triangle'></i> تحذير: زراعة نفس العائلة تزيد من خطر الأمراض الفطرية. ينصح بإضافة مبيدات وقائية.</span><br>";
-        }
+const CROPS={
+  'طماطم':{maxYield:85,targetN:220,targetP:85,targetK:350,waterBase:600},
+  'بطاطا':{maxYield:60,targetN:190,targetP:75,targetK:400,waterBase:500},
+  'قمح':{maxYield:18,targetN:140,targetP:60,targetK:120,waterBase:350},
+  'حمضيات':{maxYield:45,targetN:170,targetP:55,targetK:280,waterBase:800}
+};
 
-        // قانون الحد الأدنى (Liebig's Law) - باستخدام الأهداف المعدلة
-        const ratioN = Math.min(1, soilData.n / adjustedTargetN);
-        const ratioP = Math.min(1, soilData.p / adjustedTargetP);
-        const ratioK = Math.min(1, soilData.k / adjustedTargetK);
-        
-        // تأثير pH (المثالي بين 6 و 7)
-        let phFactor = 1.0;
-        if(soilData.ph > 7.5 || soilData.ph < 5.5) phFactor = 0.75;
-        else if(soilData.ph > 7 || soilData.ph < 6) phFactor = 0.9;
+let users=st.get('agrismart_users',[]);if(!Array.isArray(users))users=[];
+let me=null,last=null,histTab='a',orderText='';
+const sess=st.get('agrismart_current_user',null);
+if(sess&&sess.id)me=users.find(u=>u.id===sess.id)||null;
+let valve=st.get('agrismart_valve',{open:false,since:0,log:[]});
 
-        // 4. تطبيق تأثير "نوع التربة" و "المادة العضوية" على الاحتياج المائي
-        let soilWaterFactor = 1.0;
-        if(soilType === 'sandy') soilWaterFactor = 1.25; // التربة الرملية تحتاج 25% ماء أكثر (تسرب)
-        else if(soilType === 'clay') soilWaterFactor = 0.85; // التربة الطينية تحتفظ بالماء
-        
-        // المادة العضوية تحسن الاحتفاظ بالماء
-        if(organicMatter > 2.5) soilWaterFactor -= 0.1; 
-        else if(organicMatter < 1.0) soilWaterFactor += 0.1;
+function persist(){
+  if(!me||me.guest)return;
+  const i=users.findIndex(u=>u.id===me.id);if(i>-1)users[i]=me;
+  st.set('agrismart_users',users);st.set('agrismart_current_user',{id:me.id,name:me.name});
+}
+async function hash(pw){
+  try{if(window.crypto&&crypto.subtle&&window.TextEncoder){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('agrismart:'+pw));return Array.prototype.map.call(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}
+  return 'p:'+pw;
+}
+let tt;
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},3200)}
 
-        const currentYieldPerHectare = maxYieldAdjusted * Math.min(ratioN, ratioP, ratioK) * phFactor;
-        const idealYieldTotal = maxYieldAdjusted * area;
-        const currentYieldTotal = currentYieldPerHectare * area;
+/* ---------- the agronomic model (unchanged from v7) ---------- */
+function analyze(r){
+  const d={crop:CROPS[r.crop]?r.crop:'طماطم',area:def(num(r.area),1),soilType:def(r.soilType,'loamy'),om:def(num(r.om),1.5),prev:def(r.prev,'none'),strat:def(r.strat,'intensive'),N:def(num(r.N),0),P:def(num(r.P),0),K:def(num(r.K),0),pH:def(num(r.pH),7),date:r.date};
+  const req=CROPS[d.crop];
+  const s={n:d.N*2.4,p:d.P*2.4,k:d.K*2.4,ph:d.pH};
+  let f=1;if(d.strat==='economic')f=.8;if(d.strat==='organic')f=.9;
+  let tN=req.targetN*f;const tP=req.targetP*f,tK=req.targetK*f,maxY=req.maxYield*f;
+  let note=null;
+  if(d.prev==='legume'){tN*=.8;note={k:'good',t:'خُصم 20% من النيتروجين لأن الموسم السابق كان بقوليات تثبّت الآزوت في التربة.'}}
+  else if(d.prev==='same_family')note={k:'warn',t:'زراعة محصول من نفس العائلة تزيد خطر الأمراض الفطرية. يُنصح بمعالجة وقائية.'};
+  const rN=Math.min(1,s.n/tN),rP=Math.min(1,s.p/tP),rK=Math.min(1,s.k/tK),rMin=Math.min(rN,rP,rK);
+  let ph=1;if(s.ph>7.5||s.ph<5.5)ph=.75;else if(s.ph>7||s.ph<6)ph=.9;
+  let w=1;if(d.soilType==='sandy')w=1.25;else if(d.soilType==='clay')w=.85;
+  if(d.om>2.5)w-=.1;else if(d.om<1)w+=.1;
+  const cur=maxY*rMin*ph*d.area,ideal=maxY*d.area;
+  const dN=Math.max(0,(tN-s.n)*d.area),dP=Math.max(0,(tP-s.p)*d.area),dK=Math.max(0,(tK-s.k)*d.area);
+  const water=req.waterBase*d.area*(s.ph>7.5?1.15:1)*w;
+  let eff=ph*100;if(d.om<1)eff-=10;
+  const lim=rMin>=1?'لا نقص':['N','P','K'][[rN,rP,rK].indexOf(rMin)];
+  const order={N:Math.ceil(dN*2.1),P:Math.ceil(dP*2.2),K:Math.ceil(dK*2),cost:Math.ceil(dN*90+dP*110+dK*135),type:d.strat==='organic'?'سماد عضوي واد الحراش':'مستخلص'};
+  return {d,cur,ideal,water,eff,lim,note,order,nut:[
+    {k:'N',n:'نيتروجين',have:s.n,need:tN},{k:'P',n:'فوسفور',have:s.p,need:tP},{k:'K',n:'بوتاسيوم',have:s.k,need:tK}]};
+}
+const lastRec=()=>me&&me.analyses&&me.analyses.length?me.analyses[me.analyses.length-1]:null;
+function dstr(v){const d=new Date(v);return isNaN(d)?esc(v||''):`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`}
 
-        // حساب النقائص للطلب المصنعي
-        const diffN = Math.max(0, (adjustedTargetN - soilData.n) * area);
-        const diffP = Math.max(0, (adjustedTargetP - soilData.p) * area);
-        const diffK = Math.max(0, (adjustedTargetK - soilData.k) * area);
-        const waterNeed = req.waterBase * area * (soilData.ph > 7.5 ? 1.15 : 1) * soilWaterFactor;
+/* ---------- shell ---------- */
+function boot(){
+  $('#welcome').hidden=!!me;$('#app').hidden=!me;
+  if(!me)return;
+  if(!me.analyses)me.analyses=[];if(!me.orders)me.orders=[];
+  $('#av').textContent=(me.name||'؟').trim().charAt(0);
+  $('#farm').textContent=me.guest?'وضع التجربة':(me.farm||'مزرعتي');
+  fillForm(lastRec());
+  go(location.hash.slice(1)||'home');
+}
+const VIEWS=['home','analyze','report','irrigation','history'];
+function go(v){
+  if(VIEWS.indexOf(v)<0)v='home';
+  $$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  $$('.tabs a').forEach(a=>a.setAttribute('aria-current',(a.dataset.v===v||(v==='report'&&a.dataset.v==='analyze'))?'page':'false'));
+  if(v==='home')renderHome();if(v==='report')renderReport();if(v==='irrigation')renderValve();if(v==='history')renderHistory();
+  window.scrollTo(0,0);
+}
+function nav(v){if(location.hash==='#'+v)go(v);else location.hash='#'+v}
+window.addEventListener('hashchange',()=>{if(me)go(location.hash.slice(1))});
 
-        // حفظ التحليل
-        saveAnalysisToUser(soilData.n/2.4, soilData.p/2.4, soilData.k/2.4, soilData.ph, currentYieldTotal, idealYieldTotal);
+function openSheet(id){
+  closeSheets();const s=$(id),sc=$('#scrim');sc.hidden=false;s.hidden=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{s.classList.add('open');sc.classList.add('open')}));
+  const f=s.querySelector('input:not([type=hidden]),.btn');if(f)setTimeout(()=>f.focus(),60);
+}
+function closeSheets(){$$('.sheet').forEach(s=>{s.classList.remove('open');s.hidden=true});$('#scrim').classList.remove('open');$('#scrim').hidden=true}
+$('#scrim').addEventListener('click',closeSheets);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets()});
+document.addEventListener('click',e=>{if(e.target.closest('[data-close]'))closeSheets()});
 
-        // تحديث الواجهة
-        document.getElementById('resultsCard').style.display = 'block';
-        document.getElementById('resCurrentYield').innerText = currentYieldTotal.toFixed(1);
-        document.getElementById('resIdealYield').innerText = idealYieldTotal.toFixed(1);
-        document.getElementById('resWater').innerText = waterNeed.toFixed(0);
-        
-        // عرض كفاءة التربة بناء على المادة العضوية والـ pH
-        let efficiencyScore = phFactor * 100;
-        if(organicMatter < 1) efficiencyScore -= 10;
-        document.getElementById('resEfficiency').innerText = efficiencyScore.toFixed(0);
-        
-        document.getElementById('yieldReport').innerHTML = `
-            ${rotationAlert}
-            <div class="result-item"><span>الزيادة في الإنتاج الممكنة:</span> <strong style="color:var(--success)">+${(idealYieldTotal - currentYieldTotal).toFixed(1)} طن</strong></div>
-            <div class="result-item"><span>كفاءة امتصاص المغذيات:</span> <strong>${efficiencyScore.toFixed(0)}%</strong></div>
-            <div class="result-item"><span>العنصر المحدد (قانون ليبج):</span> <strong>${['N','P','K'][[ratioN, ratioP, ratioK].indexOf(Math.min(ratioN, ratioP, ratioK))]}</strong></div>
-        `;
+/* ---------- auth ---------- */
+function authMode(m){
+  $('#f-login').hidden=m!=='login';$('#f-signup').hidden=m!=='signup';
+  $('#au-t').textContent=m==='login'?'تسجيل الدخول':'إنشاء حساب';
+  $$('#s-auth [data-mode]').forEach(b=>b.setAttribute('aria-selected',b.dataset.mode===m));
+}
+$$('[data-auth]').forEach(b=>b.addEventListener('click',()=>{authMode(b.dataset.auth);openSheet('#s-auth')}));
+$$('#s-auth [data-mode]').forEach(b=>b.addEventListener('click',()=>authMode(b.dataset.mode)));
+function fail(id,m){const e=$(id);e.textContent=m;e.hidden=false}
+$('#f-login').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const em=$('#li-email').value.trim().toLowerCase(),pw=$('#li-pass').value;
+  const u=users.find(x=>String(x.email||'').toLowerCase()===em);
+  let ok=false;if(u)ok=u.hash?u.hash===await hash(pw):u.password===pw;
+  if(!ok)return fail('#li-err','البريد أو كلمة المرور غير صحيحة.');
+  if(u.password!==undefined){u.hash=await hash(pw);delete u.password}
+  $('#li-err').hidden=true;me=u;persist();closeSheets();boot();toast('أهلاً '+u.name);
+});
+$('#f-signup').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const name=$('#su-name').value.trim(),em=$('#su-email').value.trim().toLowerCase(),pw=$('#su-pass').value,farm=$('#su-farm').value.trim();
+  if(!name||!em||!pw)return fail('#su-err','املأ الاسم والبريد وكلمة المرور.');
+  if(em.indexOf('@')<1)return fail('#su-err','البريد الإلكتروني غير صالح.');
+  if(pw.length<6)return fail('#su-err','كلمة المرور قصيرة: 6 أحرف على الأقل.');
+  if(users.some(u=>String(u.email||'').toLowerCase()===em))return fail('#su-err','هذا البريد مسجّل. سجّل الدخول بدلاً من ذلك.');
+  $('#su-err').hidden=true;
+  me={id:Date.now(),name,email:em,hash:await hash(pw),farm:farm||'مزرعتي',createdAt:new Date().toISOString(),analyses:[],orders:[]};
+  users.push(me);persist();closeSheets();location.hash='#home';boot();toast('تم إنشاء الحساب');
+});
+$('#guest').addEventListener('click',()=>{me={id:'guest',guest:true,name:'ضيف',farm:'مزرعة تجريبية',analyses:[],orders:[]};location.hash='#home';boot()});
+$('#av').addEventListener('click',()=>{
+  $('#ac-av').textContent=$('#av').textContent;$('#ac-name').textContent=me.name;
+  $('#ac-mail').textContent=me.guest?'وضع التجربة: لن تُحفظ بياناتك':me.email;
+  $('#ac-farm').textContent=me.guest?'':(me.farm||'');
+  $('#logout').textContent=me.guest?'الخروج من التجربة':'تسجيل الخروج';
+  openSheet('#s-acc');
+});
+$('#logout').addEventListener('click',()=>{me=null;last=null;st.del('agrismart_current_user');closeSheets();history.replaceState(null,'',location.pathname+location.search);boot()});
 
-        // إذا اختار "عضوي"، نغير النصوص في الطلبية
-        let fertTypeStr = prodStrategy === 'organic' ? "سماد عضوي واد الحراش" : "مستخلص";
-        
-        document.getElementById('factoryDetails').innerHTML = `
-            <div class="result-item"><span>نيتروجين (${fertTypeStr}):</span> <strong>${Math.ceil(diffN * 2.1).toLocaleString()} كغ</strong></div>
-            <div class="result-item"><span>فوسفور (${fertTypeStr}):</span> <strong>${Math.ceil(diffP * 2.2).toLocaleString()} كغ</strong></div>
-            <div class="result-item"><span>بوتاسيوم (${fertTypeStr}):</span> <strong>${Math.ceil(diffK * 2.0).toLocaleString()} كغ</strong></div>
-            <hr style="margin:10px 0; border:0; border-top:1px solid #fde68a;">
-            <div class="result-item"><span>التكلفة الإجمالية التقريبية:</span> <strong style="color:var(--primary)">${Math.ceil(diffN*90 + diffP*110 + diffK*135).toLocaleString()} دج</strong></div>
-            <button class="btn btn-calc" style="margin-top:1rem; background: var(--accent);" onclick="orderFertilizer()"><i class="fas fa-truck"></i> طلب السماد المخصص</button>
-        `;
+/* ---------- home ---------- */
+function renderHome(){
+  $('#hello').textContent='أهلاً '+me.name;
+  const a=lastRec(),h=$('#h-hero');
+  if(a){
+    const r=analyze(a),pct=r.ideal>0?Math.min(100,r.cur/r.ideal*100):0,gain=r.ideal-r.cur;
+    h.innerHTML=`<section class="hero"><div><small>آخر تحليل، ${dstr(a.date)}</small><h2>${esc(r.d.crop)}، ${fmt(r.d.area)} هكتار</h2></div>
+      <div class="yrow"><div><small>المردود الحالي</small><b class="cur">${fmt(r.cur)} <span>طن</span></b></div><div><small>المردود الممكن</small><b>${fmt(r.ideal)} <span>طن</span></b></div></div>
+      <div class="ybar" role="img" aria-label="المردود الحالي ${fmt(pct,0)}% من الممكن"><i style="width:${pct.toFixed(1)}%"></i></div>
+      <div class="chips"><span>العنصر المحدِّد: ${esc(r.lim)}</span>${gain>.05?`<span>+${fmt(gain)} طن ممكنة</span>`:''}</div>
+      <button class="btn light sm" type="button" data-act="last">التقرير الكامل</button></section>`;
+    $('#h-w').textContent=fmt(r.water,0)+' م³';
+  }else{
+    h.innerHTML=`<div class="card empty">${ic('i-seed')}<h2>لا يوجد تحليل بعد</h2><p>أدخل نتائج تحليل تربتك لترى المردود الذي يضيع منك وكمية السماد الناقصة.</p><a class="btn pri" href="#analyze">ابدأ أول تحليل</a></div>`;
+    $('#h-w').textContent='—';
+  }
+  $('#h-n').textContent=me.analyses.length;
+  renderHomeValve();
+}
+function renderHomeValve(){$('#h-sw').checked=valve.open;$('#h-valve').classList.toggle('open',valve.open);$('#h-vs').textContent=valve.open?'مفتوح، يسقي الآن':'مغلق'}
+$('#h-hero').addEventListener('click',e=>{if(e.target.closest('[data-act=last]')){last=analyze(lastRec());nav('report')}});
+$('#h-sw').addEventListener('change',e=>setValve(e.target.checked));
 
-        renderChart([soilData.n, soilData.p, soilData.k], [adjustedTargetN, adjustedTargetP, adjustedTargetK]);
-    }
+/* ---------- analysis form ---------- */
+const F=$('#f-an');
+function refYield(){const c=F.elements.crop.value;$('#ref').value=CROPS[c]?CROPS[c].maxYield:''}
+F.addEventListener('change',e=>{if(e.target.name==='crop')refYield()});
+function fillForm(a){
+  if(a){['area','om','N','P','K','pH','EC','Ca','Mg','Fe'].forEach(k=>{if(a[k]!==undefined&&a[k]!==null&&!isNaN(num(a[k])))F.elements[k].value=a[k]});
+    ['crop','soilType','strat'].forEach(k=>{if(a[k]){const el=F.querySelector(`input[name=${k}][value="${String(a[k]).replace(/"/g,'')}"]`);if(el)el.checked=true}});
+    if(a.prev)F.elements.prev.value=a.prev;if(a.water)F.elements.water.value=a.water;}
+  refYield();
+}
+F.addEventListener('submit',e=>{
+  e.preventDefault();
+  const g=k=>F.elements[k].value,r={crop:g('crop'),area:num(g('area')),soilType:g('soilType'),om:num(g('om')),prev:g('prev'),strat:g('strat'),N:num(g('N')),P:num(g('P')),K:num(g('K')),pH:num(g('pH')),EC:num(g('EC')),Ca:num(g('Ca')),Mg:num(g('Mg')),Fe:num(g('Fe')),water:g('water')};
+  const bad=[];
+  if(!(r.area>0))bad.push('المساحة');
+  if(!(r.N>=0))bad.push('N');if(!(r.P>=0))bad.push('P');if(!(r.K>=0))bad.push('K');
+  if(!(r.pH>=3&&r.pH<=10))bad.push('الحموضة (بين 3 و10)');
+  if(!(r.om>=0&&r.om<=10))bad.push('المادة العضوية (بين 0 و10)');
+  const err=$('#an-err');
+  if(bad.length){err.textContent='راجع هذه القيم: '+bad.join('، ')+'.';err.hidden=false;return}
+  err.hidden=true;
+  last=analyze(r);
+  r.date=new Date().toISOString();r.currentYield=last.cur;r.idealYield=last.ideal;
+  me.analyses.push(r);persist();
+  nav('report');
+});
 
-    function orderFertilizer() {
-        if(currentUser) {
-            showToast(`📧 تم إرسال طلب السماد إلى مصنع واد الحراش. سنتواصل معك قريباً على بريد ${currentUser.email}`);
-        } else {
-            showToast('⚠️ الرجاء تسجيل الدخول أولاً');
-        }
-    }
+/* ---------- report ---------- */
+function renderReport(){
+  if(!last&&lastRec())last=analyze(lastRec());
+  const box=$('#rep');
+  if(!last){box.innerHTML=`<div class="card empty">${ic('i-flask')}<h2>لا يوجد تقرير بعد</h2><p>أجرِ تحليلاً لترى المردود المتوقع وكمية السماد.</p><a class="btn pri" href="#analyze">تحليل جديد</a></div>`;return}
+  const r=last,d=r.d,pct=r.ideal>0?Math.min(100,r.cur/r.ideal*100):0,gain=r.ideal-r.cur,o=r.order,none=o.N+o.P+o.K===0;
+  const nut=r.nut.map(x=>{const mx=Math.max(x.have,x.need)*1.08||1,low=x.have<x.need;
+    return `<div class="nut"><div class="nl"><b>${x.k}</b><small>${x.n}</small></div><div class="bars"><div class="nbar"><i style="width:${(x.have/mx*100).toFixed(1)}%;background:${low?'var(--dry)':'var(--leaf)'}"></i></div><div class="nbar need"><i style="width:${(x.need/mx*100).toFixed(1)}%"></i></div></div><div class="nv">${fmt(x.have,0)}<small>من ${fmt(x.need,0)}</small></div></div>`}).join('');
+  box.innerHTML=`<div class="vhead"><h1>تقرير المردود</h1><p>${esc(d.crop)}، ${fmt(d.area)} هكتار${d.date?`، ${dstr(d.date)}`:''}</p></div>
+  <div class="repgrid"><div class="stack">
+    <section class="hero"><div class="yrow"><div><small>المردود الحالي دون تدخل</small><b class="cur">${fmt(r.cur)} <span>طن</span></b></div><div><small>المردود الممكن بعد المعالجة</small><b>${fmt(r.ideal)} <span>طن</span></b></div></div>
+      <div class="ybar" role="img" aria-label="المردود الحالي ${fmt(pct,0)}% من الممكن"><i style="width:${pct.toFixed(1)}%"></i></div>
+      <p>${gain>.05?`يمكنك ربح <b>${fmt(gain)} طن</b> إذا عالجت النقص.`:'تربتك تغطي حاجة المحصول للهدف المختار.'}</p></section>
+    ${r.note?`<p class="alert ${r.note.k}">${ic(r.note.k==='good'?'i-check':'i-alert')}<span>${r.note.t}</span></p>`:''}
+    <section class="card"><h2>العناصر الكبرى (كغ/هكتار)</h2>${nut}
+      <div class="key"><span><i style="background:var(--dry)"></i>المتوفر في التربة</span><span><i style="background:var(--wheat)"></i>الاحتياج للهدف المختار</span></div></section>
+    <div class="facts"><div><small>العنصر المحدِّد</small><b>${esc(r.lim)}</b></div><div><small>كفاءة التربة</small><b>${fmt(r.eff,0)}%</b></div><div><small>الاحتياج المائي</small><b>${fmt(r.water,0)} م³</b></div></div>
+  </div>
+  <section class="card"><h2>طلبية السماد المقترحة</h2>
+    ${none?'<p class="muted">لا حاجة لسماد إضافي لهذا الهدف.</p>':`<p class="muted" style="margin-bottom:8px">${esc(o.type)} لتغطية النقص في ${fmt(d.area)} هكتار.</p>
+    <ul class="lines"><li><span>نيتروجين (N)</span><b>${fmt(o.N,0)} كغ</b></li><li><span>فوسفور (P)</span><b>${fmt(o.P,0)} كغ</b></li><li><span>بوتاسيوم (K)</span><b>${fmt(o.K,0)} كغ</b></li><li class="total"><span>التكلفة التقريبية</span><b>${fmt(o.cost,0)} دج</b></li></ul>
+    <button class="btn pri block" type="button" data-act="order">${ic('i-truck')}جهّز طلب السماد</button>`}
+  </section></div>`;
+}
+$('#rep').addEventListener('click',e=>{if(e.target.closest('[data-act=order]'))makeOrder()});
+function makeOrder(){
+  const r=last,o=r.order;
+  orderText=['طلب سماد مخصّص من AgriSmart','الاسم: '+me.name,'المزرعة: '+(me.farm||''),'المحصول: '+r.d.crop+'، '+fmt(r.d.area)+' هكتار','النوع: '+o.type,'نيتروجين: '+fmt(o.N,0)+' كغ','فوسفور: '+fmt(o.P,0)+' كغ','بوتاسيوم: '+fmt(o.K,0)+' كغ','التكلفة التقريبية: '+fmt(o.cost,0)+' دج'].join('\n');
+  me.orders.push({date:new Date().toISOString(),crop:r.d.crop,area:r.d.area,N:o.N,P:o.P,K:o.K,cost:o.cost,type:o.type});persist();
+  $('#or-msg').textContent=orderText;
+  $('#or-wa').href='https://wa.me/'+WA+'?text='+encodeURIComponent(orderText);
+  $('#or-copy').lastChild.textContent='انسخ النص';
+  openSheet('#s-order');
+}
+$('#or-copy').addEventListener('click',async()=>{const b=$('#or-copy');try{await navigator.clipboard.writeText(orderText);b.lastChild.textContent='تم النسخ'}catch(x){b.lastChild.textContent='تعذّر النسخ، انسخه يدوياً'}});
 
-    function renderChart(current, target) {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['N', 'P', 'K'],
-                datasets: [
-                    { label: 'المتوفر حالياً (كغ/هكتار)', data: current, backgroundColor: '#94a3b8' },
-                    { label: 'الاحتياج للهدف المختار', data: target, backgroundColor: '#2d6a4f' }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
+/* ---------- irrigation ---------- */
+function setValve(open){
+  valve.open=open;valve.since=Date.now();
+  valve.log=[{t:Date.now(),open}].concat(valve.log||[]).slice(0,8);
+  st.set('agrismart_valve',valve);renderValve();renderHomeValve();
+  toast(open?'فُتح الصمّام':'أُغلق الصمّام');
+}
+function since(){if(!valve.open||!valve.since)return '';const s=Math.max(0,Math.floor((Date.now()-valve.since)/1000));return 'مفتوح منذ '+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function renderValve(){
+  $('#dial').classList.toggle('open',valve.open);
+  $('#ir-state').textContent=valve.open?'يسقي الآن':'مغلق';
+  $('#ir-since').textContent=since();
+  const b=$('#ir-btn');b.textContent=valve.open?'أغلق الصمّام':'افتح الصمّام';b.className='btn block '+(valve.open?'dark':'pri');
+  const a=lastRec();
+  $('#ir-need').innerHTML=a?(()=>{const r=analyze(a);return `<b class="num" style="font-size:22px;color:var(--ink)">${fmt(r.water,0)} م³</b> لـ${esc(r.d.crop)} على ${fmt(r.d.area)} هكتار، حسب نسيج التربة والمادة العضوية والحموضة.`})():'أجرِ تحليلاً ليُحسب احتياج حقلك من الماء.';
+  const L=valve.log||[];
+  $('#ir-log').innerHTML=L.length?L.map(x=>{const d=new Date(x.t);return `<li><span>${x.open?'فتح الصمّام':'إغلاق الصمّام'}</span><span class="muted num">${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}، ${d.getDate()}/${d.getMonth()+1}</span></li>`}).join(''):'<li class="muted">لا توجد عمليات بعد.</li>';
+}
+$('#ir-btn').addEventListener('click',()=>setValve(!valve.open));
+setInterval(()=>{if(valve.open&&$('#v-irrigation').classList.contains('on'))$('#ir-since').textContent=since()},1000);
 
-    function toggleValve() {
-        valveState = !valveState;
-        const btn = document.getElementById('valveBtn');
-        const label = document.getElementById('valveLabel');
-        if(valveState) {
-            btn.className = "btn btn-valve active";
-            btn.innerHTML = '<i class="fas fa-sync fa-spin"></i> إيقاف الري';
-            label.innerText = "صمام الحقل الرئيسي: مفتوح الآن";
-            showToast('💧 تم فتح صمام الري');
-        } else {
-            btn.className = "btn btn-valve";
-            btn.innerHTML = '<i class="fas fa-power-off"></i> فتح الصمام';
-            label.innerText = "صمام الحقل الرئيسي: مغلق";
-            showToast('⏹️ تم إغلاق صمام الري');
-        }
-    }
+/* ---------- history ---------- */
+function renderHistory(){
+  $('#tb-a').setAttribute('aria-selected',histTab==='a');$('#tb-o').setAttribute('aria-selected',histTab==='o');
+  const box=$('#hi-list');
+  if(histTab==='a'){
+    const A=me.analyses.map((a,i)=>[a,i]).reverse();
+    box.innerHTML=A.length?'<ul class="items">'+A.map(([a,i])=>`<li class="item"><div><b>${esc(a.crop)}</b><small>${dstr(a.date)}، ${fmt(def(num(a.area),0))} هكتار</small></div><div class="iv"><b>${fmt(def(num(a.currentYield),0))}</b><small>من ${fmt(def(num(a.idealYield),0))} طن</small></div><div class="acts"><button class="btn soft sm" type="button" data-rep="${i}">التقرير</button><button class="btn link" type="button" data-use="${i}">عدّل وأعد التحليل</button></div></li>`).join('')+'</ul>'
+      :`<div class="card empty">${ic('i-clock')}<h2>السجل فارغ</h2><p>كل تحليل تجريه يُحفظ هنا لتقارن بين المواسم.</p><a class="btn pri" href="#analyze">تحليل جديد</a></div>`;
+  }else{
+    const O=me.orders.slice().reverse();
+    box.innerHTML=O.length?'<ul class="items">'+O.map(o=>`<li class="item"><div><b>${esc(o.crop)}، ${fmt(def(num(o.area),0))} هكتار</b><small>${dstr(o.date)}، N ${fmt(o.N,0)} / P ${fmt(o.P,0)} / K ${fmt(o.K,0)} كغ</small></div><div class="iv"><b>${fmt(o.cost,0)}</b><small>دج</small></div></li>`).join('')+'</ul>'
+      :`<div class="card empty">${ic('i-truck')}<h2>لا توجد طلبيات</h2><p>جهّز طلب سماد من تقرير أي تحليل.</p></div>`;
+  }
+}
+$('#tb-a').addEventListener('click',()=>{histTab='a';renderHistory()});
+$('#tb-o').addEventListener('click',()=>{histTab='o';renderHistory()});
+$('#hi-list').addEventListener('click',e=>{
+  const r=e.target.closest('[data-rep]'),u=e.target.closest('[data-use]');
+  if(r){last=analyze(me.analyses[+r.dataset.rep]);nav('report')}
+  if(u){fillForm(me.analyses[+u.dataset.use]);nav('analyze')}
+});
 
-    function showToast(msg) {
-        let toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 4000); // زيادة وقت العرض قليلاً لقراءة التنبيهات
-    }
-
-    function showTab(tab) {
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        event.target.closest('.nav-item').classList.add('active');
-        showToast(`📱 تم فتح قسم ${tab}`);
-    }
-
-    // تهيئة الصفحة
-    initAuth();
-    </script>
+boot();
+}
+</script>
 </body>
 </html>
